@@ -26,6 +26,7 @@ export default function SignIn() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
+        credentials: "include",
       });
 
       router.push("/signin-berhasil");
@@ -43,7 +44,6 @@ export default function SignIn() {
     <div className="min-h-screen bg-[#F4F2EA] flex items-center justify-center px-4 py-8 sm:py-12">
       {/* MAIN CARD */}
       <div className="w-full max-w-5xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-        
         {/* LEFT SIDE - ILLUSTRATION (Hidden on mobile) */}
         <div className="hidden md:block relative bg-[#F8F8F8] p-6 lg:p-8">
           <div className="h-full flex items-center justify-center">
@@ -61,7 +61,6 @@ export default function SignIn() {
 
         {/* RIGHT SIDE - SIGN IN FORM */}
         <div className="bg-[#6FB07A] p-6 sm:p-8 md:p-10 flex flex-col justify-center">
-          
           {/* Header */}
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-white">
@@ -76,7 +75,12 @@ export default function SignIn() {
             onClick={handleGoogleSignIn}
             className="w-full border border-white/70 text-white py-2.5 sm:py-3 rounded-xl text-sm flex items-center justify-center gap-3 mb-5 sm:mb-6 hover:bg-white/10 transition"
           >
-            <Image src="/icon/google.png" alt="Google Icon" width={18} height={18} />
+            <Image
+              src="/icon/google.png"
+              alt="Google Icon"
+              width={18}
+              height={18}
+            />
             Lanjut dengan Google
           </button>
 
@@ -103,9 +107,7 @@ export default function SignIn() {
 
           {/* Password Field */}
           <div className="mb-5 sm:mb-6">
-            <label className="block text-white text-sm mb-1.5">
-              Password
-            </label>
+            <label className="block text-white text-sm mb-1.5">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}

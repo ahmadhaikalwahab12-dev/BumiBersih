@@ -1,25 +1,35 @@
-import { Buffer } from "buffer";
 import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req) {
   try {
+    if (!JWT_SECRET) {
+      return new Response("Server misconfiguration", { status: 500 });
+    }
+
     const { token } = await req.json();
 
-    // Decode JWT payload
-    const payload = token.split(".")[1];
-    const decoded = JSON.parse(
-      Buffer.from(payload, "base64").toString("utf-8")
-    );
+    if (!token) {
+      return new Response("Token required", { status: 400 });
+    }
 
-    // Ambil email dari token
-    const email = decoded.email;
+    // =====================
+    // VERIFY JWT (WAJIB)
+    // =====================
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const email = decoded?.email;
 
     if (!email) {
       return new Response("Invalid token", { status: 401 });
     }
 
-    // Cari user di Prisma
+    // =====================
+    // CARI USER
+    // =====================
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -28,8 +38,12 @@ export async function POST(req) {
       return new Response("User not found", { status: 404 });
     }
 
-    // SET COOKIE SESSION
-    cookies().set("session", token, {
+    const cookieStore = await cookies();
+
+    // =====================
+    // SET COOKIE SESSION (JWT)
+    // =====================
+    cookieStore.set("session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -37,8 +51,10 @@ export async function POST(req) {
       path: "/",
     });
 
-    // SET COOKIE userId (INI KUNCI)
-    cookies().set("userId", user.id.toString(), {
+    // =====================
+    // OPTIONAL: userId cookie
+    // =====================
+    cookieStore.set("userId", user.id.toString(), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -55,7 +71,7 @@ export async function POST(req) {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error("LOGIN ERROR:", error);
     return new Response("Unauthorized", { status: 401 });
   }
 }
